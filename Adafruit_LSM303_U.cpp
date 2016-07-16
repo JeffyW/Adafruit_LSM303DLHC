@@ -89,7 +89,7 @@ byte Adafruit_LSM303_Accel_Unified::read8(byte address, byte reg)
     @brief  Reads the raw data from the sensor
 */
 /**************************************************************************/
-void Adafruit_LSM303_Accel_Unified::read()
+bool Adafruit_LSM303_Accel_Unified::read()
 {
   // Read the accelerometer
   Wire.beginTransmission((byte)LSM303_ADDRESS_ACCEL);
@@ -98,11 +98,17 @@ void Adafruit_LSM303_Accel_Unified::read()
   #else
     Wire.send(LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80);
   #endif
-  Wire.endTransmission();
-  Wire.requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)6);
-
-  // Wait around until enough data is available
-  while (Wire.available() < 6);
+  if (Wire.endTransmission() != 0)
+  {
+    // Error.
+    return false;
+  }
+  const byte bytesToRead = 6;
+  if (!Wire.requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)bytesToRead) == bytesToRead)
+  {
+    // Error.
+    return false;
+  }
 
   #if ARDUINO >= 100
     uint8_t xlo = Wire.read();
@@ -124,6 +130,8 @@ void Adafruit_LSM303_Accel_Unified::read()
   _accelData.x = (int16_t)(xlo | (xhi << 8)) >> 4;
   _accelData.y = (int16_t)(ylo | (yhi << 8)) >> 4;
   _accelData.z = (int16_t)(zlo | (zhi << 8)) >> 4;
+
+  return true;
 }
 
 /***************************************************************************
@@ -261,7 +269,10 @@ bool Adafruit_LSM303_Accel_Unified::getEvent(sensors_event_t *event) {
   memset(event, 0, sizeof(sensors_event_t));
 
   /* Read new data */
-  read();
+  if (!read())
+  {
+    return false;
+  }
 
   event->version   = sizeof(sensors_event_t);
   event->sensor_id = _sensorID;
@@ -352,7 +363,7 @@ byte Adafruit_LSM303_Mag_Unified::read8(byte address, byte reg)
     @brief  Reads the raw data from the sensor
 */
 /**************************************************************************/
-void Adafruit_LSM303_Mag_Unified::read()
+bool Adafruit_LSM303_Mag_Unified::read()
 {
   // Read the magnetometer
   Wire.beginTransmission((byte)LSM303_ADDRESS_MAG);
@@ -361,9 +372,19 @@ void Adafruit_LSM303_Mag_Unified::read()
   #else
     Wire.send(LSM303_REGISTER_MAG_OUT_X_H_M);
   #endif
-  Wire.endTransmission();
-  Wire.requestFrom((byte)LSM303_ADDRESS_MAG, (byte)6);
+  if (Wire.endTransmission() != 0)
+  {
+    // Error.
+    return false;
+  }
 
+  const byte bytesToRead = 6;
+  if (!Wire.requestFrom((byte)LSM303_ADDRESS_MAG, (byte)bytesToRead) == bytesToRead)
+  {
+    // Error.
+    return false;
+  }
+  
   // Wait around until enough data is available
   while (Wire.available() < 6);
 
@@ -391,6 +412,8 @@ void Adafruit_LSM303_Mag_Unified::read()
 
   // ToDo: Calculate orientation
   // _magData.orientation = 0.0;
+
+  return true;
 }
 
 /***************************************************************************
@@ -527,7 +550,10 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
     }
 
     /* Read new data */
-    read();
+    if (!read())
+    {
+      return false;
+    }
 
     /* Make sure the sensor isn't saturating if auto-ranging is enabled */
     if (!_autoRangeEnabled)
@@ -612,7 +638,7 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
   event->magnetic.y = _magData.y / _lsm303Mag_Gauss_LSB_XY * SENSORS_GAUSS_TO_MICROTESLA;
   event->magnetic.z = _magData.z / _lsm303Mag_Gauss_LSB_Z * SENSORS_GAUSS_TO_MICROTESLA;
 
-	return true;
+  return true;
 }
 
 /**************************************************************************/

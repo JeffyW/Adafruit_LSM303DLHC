@@ -199,7 +199,7 @@ class Adafruit_LSM303_Accel_Unified : public Adafruit_Sensor
 
     void write8(byte address, byte reg, byte value);
     byte read8(byte address, byte reg);
-    void read(void);
+    bool read(void);
 };
 
 /* Unified sensor driver for the magnetometer */
@@ -223,7 +223,7 @@ class Adafruit_LSM303_Mag_Unified : public Adafruit_Sensor
 
     void write8(byte address, byte reg, byte value);
     byte read8(byte address, byte reg);
-    void read(void);
+    bool read(void);
 };
 
 #endif
