@@ -9,7 +9,7 @@
   please support Adafruit andopen-source hardware by purchasing products
   from Adafruit!
 
-  Written by Kevin Townsend for Adafruit Industries.  
+  Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 #ifndef __LSM303_H__
@@ -68,7 +68,7 @@
       LSM303_REGISTER_ACCEL_TIME_LATENCY_A      = 0x3C,
       LSM303_REGISTER_ACCEL_TIME_WINDOW_A       = 0x3D
     } lsm303AccelRegisters_t;
-    
+
     typedef enum
     {
       LSM303_REGISTER_MAG_CRA_REG_M             = 0x00,
@@ -90,6 +90,37 @@
 /*=========================================================================*/
 
 /*=========================================================================
+    ACCELEROMETER RANGE SETTINGS
+    -----------------------------------------------------------------------*/
+    typedef enum
+    {
+      LSM303_ACCEL_RANGE_2                      = 0x00, // +/- 2G
+      LSM303_ACCEL_RANGE_4                      = 0x01, // +/- 4G
+      LSM303_ACCEL_RANGE_8                      = 0x02, // +/- 8G
+      LSM303_ACCEL_RANGE_16                     = 0x03  // +/- 16G
+    } lsm303AccelRange;
+/*=========================================================================*/
+
+/*=========================================================================
+    ACCELEROMETER OUTPUT DATA RATE SETTINGS
+    -----------------------------------------------------------------------*/
+    typedef enum
+    {
+      LSM303_ACCEL_ODR_OFF                      = 0x00, // Power-down mode
+      LSM303_ACCEL_ODR_1                        = 0x01, // Normal / low-power mode (1 Hz)
+      LSM303_ACCEL_ODR_10                       = 0x02, // Normal / low-power mode (10 Hz)
+      LSM303_ACCEL_ODR_25                       = 0x03, // Normal / low-power mode (25 Hz)
+      LSM303_ACCEL_ODR_50                       = 0x04, // Normal / low-power mode (50 Hz)
+      LSM303_ACCEL_ODR_100                      = 0x05, // Normal / low-power mode (100 Hz)
+      LSM303_ACCEL_ODR_200                      = 0x06, // Normal / low-power mode (200 Hz)
+      LSM303_ACCEL_ODR_400                      = 0x07, // Normal / low-power mode (400 Hz)
+      LSM303_ACCEL_ODR_1344                     = 0x09, // Normal (1.344 kHz) / low-power mode (5.376 KHz)
+      LSM303_ACCEL_ODR_1620                     = 0x08, // Low-power mode (1.620 KHz)
+      LSM303_ACCEL_ODR_5376                     = 0x09, // Normal (1.344 kHz) / low-power mode (5.376 KHz)
+    } lsm303AccelRate;
+/*=========================================================================*/
+
+/*=========================================================================
     MAGNETOMETER GAIN SETTINGS
     -----------------------------------------------------------------------*/
     typedef enum
@@ -101,7 +132,7 @@
       LSM303_MAGGAIN_4_7                        = 0xA0,  // +/- 4.7
       LSM303_MAGGAIN_5_6                        = 0xC0,  // +/- 5.6
       LSM303_MAGGAIN_8_1                        = 0xE0   // +/- 8.1
-    } lsm303MagGain;	
+    } lsm303MagGain;
 /*=========================================================================*/
 
 /*=========================================================================
@@ -117,7 +148,7 @@
       LSM303_MAGRATE_30                         = 0x05,  // 30 Hz
       LSM303_MAGRATE_75                         = 0x06,  // 75 Hz
       LSM303_MAGRATE_220                        = 0x07   // 200 Hz
-    } lsm303MagRate;	
+    } lsm303MagRate;
 /*=========================================================================*/
 
 /*=========================================================================
@@ -141,7 +172,7 @@
       float z;
     } lsm303AccelData;
 /*=========================================================================*/
-	
+
 /*=========================================================================
     CHIP ID
     -----------------------------------------------------------------------*/
@@ -153,15 +184,19 @@ class Adafruit_LSM303_Accel_Unified : public Adafruit_Sensor
 {
   public:
     Adafruit_LSM303_Accel_Unified(int32_t sensorID = -1);
-  
+
     bool begin(void);
+    void setAccelRange(lsm303AccelRange);
+    void enableInt1DataReady(bool);
+    void setAccelRate(lsm303AccelRate);
+    void enableLowPower(bool);
     bool getEvent(sensors_event_t*);
     void getSensor(sensor_t*);
 
   private:
     lsm303AccelData _accelData;   // Last read accelerometer data will be available here
     int32_t         _sensorID;
-    
+
     void write8(byte address, byte reg, byte value);
     byte read8(byte address, byte reg);
     void read(void);
@@ -172,7 +207,7 @@ class Adafruit_LSM303_Mag_Unified : public Adafruit_Sensor
 {
   public:
     Adafruit_LSM303_Mag_Unified(int32_t sensorID = -1);
-  
+
     bool begin(void);
     void enableAutoRange(bool enable);
     void setMagGain(lsm303MagGain gain);
@@ -185,7 +220,7 @@ class Adafruit_LSM303_Mag_Unified : public Adafruit_Sensor
     lsm303MagData   _magData;     // Last read magnetometer data will be available here
     int32_t         _sensorID;
     bool            _autoRangeEnabled;
-    
+
     void write8(byte address, byte reg, byte value);
     byte read8(byte address, byte reg);
     void read(void);
