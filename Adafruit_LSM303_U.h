@@ -183,6 +183,7 @@
 class Adafruit_LSM303_Accel_Unified : public Adafruit_Sensor
 {
   public:
+    Adafruit_LSM303_Accel_Unified(TwoWire* wire, int32_t sensorID = -1);
     Adafruit_LSM303_Accel_Unified(int32_t sensorID = -1);
 
     bool begin(void);
@@ -194,6 +195,7 @@ class Adafruit_LSM303_Accel_Unified : public Adafruit_Sensor
     void getSensor(sensor_t*);
 
   private:
+    TwoWire*        _wire;
     lsm303AccelData _accelData;   // Last read accelerometer data will be available here
     int32_t         _sensorID;
 
@@ -206,6 +208,7 @@ class Adafruit_LSM303_Accel_Unified : public Adafruit_Sensor
 class Adafruit_LSM303_Mag_Unified : public Adafruit_Sensor
 {
   public:
+    Adafruit_LSM303_Mag_Unified(TwoWire* wire, int32_t sensorID = -1);
     Adafruit_LSM303_Mag_Unified(int32_t sensorID = -1);
 
     bool begin(void);
@@ -216,6 +219,7 @@ class Adafruit_LSM303_Mag_Unified : public Adafruit_Sensor
     void getSensor(sensor_t*);
 
   private:
+    TwoWire*        _wire;
     lsm303MagGain   _magGain;
     lsm303MagData   _magData;     // Last read magnetometer data will be available here
     int32_t         _sensorID;
