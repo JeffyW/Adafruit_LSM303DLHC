@@ -66,6 +66,9 @@ byte Adafruit_LSM303_Accel_Unified::read8(byte address, byte reg)
 {
   byte value;
 
+  #if ARDUINO >= 10607
+  _wire->requestFrom(address, (byte)1, reg, 1, true);
+  #else
   _wire->beginTransmission(address);
   #if ARDUINO >= 100
     _wire->write((uint8_t)reg);
@@ -74,6 +77,7 @@ byte Adafruit_LSM303_Accel_Unified::read8(byte address, byte reg)
   #endif
   _wire->endTransmission();
   _wire->requestFrom(address, (byte)1);
+  #endif
   #if ARDUINO >= 100
     value = _wire->read();
   #else
@@ -92,6 +96,10 @@ byte Adafruit_LSM303_Accel_Unified::read8(byte address, byte reg)
 bool Adafruit_LSM303_Accel_Unified::read()
 {
   // Read the accelerometer
+  const byte bytesToRead = 6;
+  #if ARDUINO >= 10607
+  if (_wire->requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)bytesToRead, LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80, 1, true) != bytesToRead)
+  #else
   _wire->beginTransmission((byte)LSM303_ADDRESS_ACCEL);
   #if ARDUINO >= 100
     _wire->write(LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80);
@@ -103,8 +111,8 @@ bool Adafruit_LSM303_Accel_Unified::read()
     // Error.
     return false;
   }
-  const byte bytesToRead = 6;
-  if (!_wire->requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)bytesToRead) == bytesToRead)
+  if (_wire->requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)bytesToRead) != bytesToRead)
+  #endif
   {
     // Error.
     return false;
@@ -349,6 +357,9 @@ byte Adafruit_LSM303_Mag_Unified::read8(byte address, byte reg)
 {
   byte value;
 
+  #if ARDUINO >= 10607
+  _wire->requestFrom(address, (byte)1, reg, 1, true);
+  #else
   _wire->beginTransmission(address);
   #if ARDUINO >= 100
     _wire->write((uint8_t)reg);
@@ -357,6 +368,7 @@ byte Adafruit_LSM303_Mag_Unified::read8(byte address, byte reg)
   #endif
   _wire->endTransmission();
   _wire->requestFrom(address, (byte)1);
+  #endif
   #if ARDUINO >= 100
     value = _wire->read();
   #else
@@ -375,6 +387,10 @@ byte Adafruit_LSM303_Mag_Unified::read8(byte address, byte reg)
 bool Adafruit_LSM303_Mag_Unified::read()
 {
   // Read the magnetometer
+  const byte bytesToRead = 6;
+  #if ARDUINO >= 10607
+  if (_wire->requestFrom((byte)LSM303_ADDRESS_MAG, (byte)bytesToRead, LSM303_REGISTER_MAG_OUT_X_H_M, 1, true) != bytesToRead)
+  #else
   _wire->beginTransmission((byte)LSM303_ADDRESS_MAG);
   #if ARDUINO >= 100
     _wire->write(LSM303_REGISTER_MAG_OUT_X_H_M);
@@ -386,17 +402,13 @@ bool Adafruit_LSM303_Mag_Unified::read()
     // Error.
     return false;
   }
-
-  const byte bytesToRead = 6;
-  if (!_wire->requestFrom((byte)LSM303_ADDRESS_MAG, (byte)bytesToRead) == bytesToRead)
+  if (_wire->requestFrom((byte)LSM303_ADDRESS_MAG, (byte)bytesToRead) != bytesToRead)
+  #endif
   {
     // Error.
     return false;
   }
   
-  // Wait around until enough data is available
-  while (_wire->available() < 6);
-
   // Note high before low (different than accel)
   #if ARDUINO >= 100
     uint8_t xhi = _wire->read();
