@@ -185,8 +185,8 @@ public:
 	void enableInt1DataReady(bool);
 	void setAccelRate(lsm303AccelRate);
 	void enableLowPower(bool);
-	bool getEvent(sensors_event_t*);
-	virtual void enableAutoRange(bool enabled) {};
+	bool getEvent(sensors_vec_t* acceleration);
+	void enableAutoRange(bool enabled) {};
 
 private:
 	TwoWire*        _wire;

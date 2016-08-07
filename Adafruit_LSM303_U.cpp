@@ -162,7 +162,6 @@ void Adafruit_LSM303_Accel_Unified::setAccelRange(lsm303AccelRange range)
 	}
 
 	byte existing = read8(LSM303_ADDRESS_ACCEL, LSM303_REGISTER_ACCEL_CTRL_REG4_A);
-
 	write8(LSM303_ADDRESS_ACCEL, LSM303_REGISTER_ACCEL_CTRL_REG4_A, existing |= range << 4);
 }
 
@@ -223,9 +222,9 @@ void Adafruit_LSM303_Accel_Unified::enableLowPower(bool enabled)
 	@brief  Gets the most recent sensor event
 */
 /**************************************************************************/
-bool Adafruit_LSM303_Accel_Unified::getEvent(sensors_event_t *event) {
+bool Adafruit_LSM303_Accel_Unified::getEvent(sensors_vec_t* acceleration) {
 	/* Clear the event */
-	memset(event, 0, sizeof(sensors_event_t));
+	memset(acceleration, 0, sizeof(sensors_vec_t));
 
 	/* Read new data */
 	if (!read())
@@ -233,29 +232,24 @@ bool Adafruit_LSM303_Accel_Unified::getEvent(sensors_event_t *event) {
 		return false;
 	}
 
-	event->version = sizeof(sensors_event_t);
-	event->sensor_id = _sensorID;
-	event->type = SENSOR_TYPE_ACCELEROMETER;
-	event->timestamp = millis();
-	event->acceleration.x = _accelData.x * _lsm303Accel_MG_LSB * SENSORS_GRAVITY_STANDARD;
-	event->acceleration.y = _accelData.y * _lsm303Accel_MG_LSB * SENSORS_GRAVITY_STANDARD;
-	event->acceleration.z = _accelData.z * _lsm303Accel_MG_LSB * SENSORS_GRAVITY_STANDARD;
-
+	acceleration->x = _accelData.x * _lsm303Accel_MG_LSB * SENSORS_GRAVITY_STANDARD;
+	acceleration->y = _accelData.y * _lsm303Accel_MG_LSB * SENSORS_GRAVITY_STANDARD;
+	acceleration->z = _accelData.z * _lsm303Accel_MG_LSB * SENSORS_GRAVITY_STANDARD;
 	return true;
 }
 
 /***************************************************************************
  MAGNETOMETER
  ***************************************************************************/
- /***************************************************************************
-  PRIVATE FUNCTIONS
-  ***************************************************************************/
+/***************************************************************************
+ PRIVATE FUNCTIONS
+ ***************************************************************************/
 
-  /**************************************************************************/
-  /*!
+/**************************************************************************/
+/*!
 	  @brief  Abstract away platform differences in Arduino wire library
-  */
-  /**************************************************************************/
+*/
+/**************************************************************************/
 void Adafruit_LSM303_Mag_Unified::write8(uint8_t address, uint8_t reg, uint8_t value)
 {
 	_wire->beginTransmission(address);
@@ -313,11 +307,11 @@ bool Adafruit_LSM303_Mag_Unified::read()
  CONSTRUCTOR
  ***************************************************************************/
 
- /**************************************************************************/
- /*!
+/**************************************************************************/
+/*!
 	 @brief  Instantiates a new Adafruit_LSM303 class
- */
- /**************************************************************************/
+*/
+/**************************************************************************/
 Adafruit_LSM303_Mag_Unified::Adafruit_LSM303_Mag_Unified(TwoWire* wire, int32_t sensorID) {
 	_wire = wire;
 	_sensorID = sensorID;
@@ -336,11 +330,11 @@ Adafruit_LSM303_Mag_Unified::Adafruit_LSM303_Mag_Unified(int32_t sensorID) : Ada
  PUBLIC FUNCTIONS
  ***************************************************************************/
 
- /**************************************************************************/
- /*!
+/**************************************************************************/
+/*!
 	 @brief  Setups the HW
- */
- /**************************************************************************/
+*/
+/**************************************************************************/
 bool Adafruit_LSM303_Mag_Unified::begin()
 {
 	// Enable I2C
@@ -427,7 +421,7 @@ void Adafruit_LSM303_Mag_Unified::setMagGain(lsm303MagGain gain)
 /**************************************************************************/
 void Adafruit_LSM303_Mag_Unified::setMagRate(lsm303MagRate rate)
 {
-	byte reg_m = ((byte)rate & 0x07) << 2;
+	uint8_t reg_m = ((uint8_t)rate & 0x07) << 2;
 	write8(LSM303_ADDRESS_MAG, LSM303_REGISTER_MAG_CRA_REG_M, reg_m);
 }
 
