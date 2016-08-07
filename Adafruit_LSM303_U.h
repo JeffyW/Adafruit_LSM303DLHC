@@ -15,26 +15,20 @@
 #ifndef __LSM303_H__
 #define __LSM303_H__
 
-#if (ARDUINO >= 100)
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-
  /*=========================================================================
-	 I2C ADDRESS/BITS
-	 -----------------------------------------------------------------------*/
+	I2C ADDRESS/BITS
+	-----------------------------------------------------------------------*/
 #define LSM303_ADDRESS_ACCEL          (0x32 >> 1)         // 0011001x
 #define LSM303_ADDRESS_MAG            (0x3C >> 1)         // 0011110x
-	 /*=========================================================================*/
+/*=========================================================================*/
 
-	 /*=========================================================================
-		 REGISTERS
-		 -----------------------------------------------------------------------*/
+/*=========================================================================
+	REGISTERS
+	-----------------------------------------------------------------------*/
 typedef enum
 {                                                     // DEFAULT    TYPE
 	LSM303_REGISTER_ACCEL_CTRL_REG1_A = 0x20,   // 00000111   rw
@@ -180,7 +174,7 @@ typedef struct lsm303AccelData_s
 	/*=========================================================================*/
 
 	/* Unified sensor driver for the accelerometer */
-class Adafruit_LSM303_Accel_Unified : public Adafruit_Sensor
+class Adafruit_LSM303_Accel_Unified
 {
 public:
 	Adafruit_LSM303_Accel_Unified(TwoWire* wire, int32_t sensorID = -1);
@@ -192,20 +186,19 @@ public:
 	void setAccelRate(lsm303AccelRate);
 	void enableLowPower(bool);
 	bool getEvent(sensors_event_t*);
-	void getSensor(sensor_t*);
 
 private:
 	TwoWire*        _wire;
 	lsm303AccelData _accelData;   // Last read accelerometer data will be available here
 	int32_t         _sensorID;
 
-	void write8(byte address, byte reg, byte value);
-	byte read8(byte address, byte reg);
+	void write8(uint8_t address, uint8_t reg, uint8_t value);
+	uint8_t read8(uint8_t address, uint8_t reg);
 	bool read(void);
 };
 
 /* Unified sensor driver for the magnetometer */
-class Adafruit_LSM303_Mag_Unified : public Adafruit_Sensor
+class Adafruit_LSM303_Mag_Unified
 {
 public:
 	Adafruit_LSM303_Mag_Unified(TwoWire* wire, int32_t sensorID = -1);
@@ -216,7 +209,6 @@ public:
 	void setMagGain(lsm303MagGain gain);
 	void setMagRate(lsm303MagRate rate);
 	bool getEvent(sensors_event_t*);
-	void getSensor(sensor_t*);
 
 private:
 	TwoWire*        _wire;
@@ -225,8 +217,8 @@ private:
 	int32_t         _sensorID;
 	bool            _autoRangeEnabled;
 
-	void write8(byte address, byte reg, byte value);
-	byte read8(byte address, byte reg);
+	void write8(uint8_t address, uint8_t reg, uint8_t value);
+	uint8_t read8(uint8_t address, uint8_t reg);
 	bool read(void);
 };
 

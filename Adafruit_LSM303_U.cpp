@@ -12,21 +12,10 @@
   Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
-#if ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 #include <Wire.h>
-
 #include <limits.h>
-
 #include "Adafruit_LSM303_U.h"
-
- /* enabling this #define will enable the debug print blocks
- #define LSM303_DEBUG
- */
 
 static float _lsm303Accel_MG_LSB = 0.001F;   // 1, 2, 4 or 12 mg per lsb
 static float _lsm303Mag_Gauss_LSB_XY = 1100.0F;  // Varies with gain
@@ -44,16 +33,11 @@ static float _lsm303Mag_Gauss_LSB_Z = 980.0F;   // Varies with gain
 	  @brief  Abstract away platform differences in Arduino wire library
   */
   /**************************************************************************/
-void Adafruit_LSM303_Accel_Unified::write8(byte address, byte reg, byte value)
+void Adafruit_LSM303_Accel_Unified::write8(uint8_t address, uint8_t reg, uint8_t value)
 {
 	_wire->beginTransmission(address);
-#if ARDUINO >= 100
-	_wire->write((uint8_t)reg);
-	_wire->write((uint8_t)value);
-#else
-	_wire->send(reg);
-	_wire->send(value);
-#endif
+	_wire->write(reg);
+	_wire->write(value);
 	_wire->endTransmission();
 }
 
@@ -62,30 +46,10 @@ void Adafruit_LSM303_Accel_Unified::write8(byte address, byte reg, byte value)
 	@brief  Abstract away platform differences in Arduino wire library
 */
 /**************************************************************************/
-byte Adafruit_LSM303_Accel_Unified::read8(byte address, byte reg)
+uint8_t Adafruit_LSM303_Accel_Unified::read8(uint8_t address, uint8_t reg)
 {
-	byte value;
-
-#if ARDUINO >= 10607
-	_wire->requestFrom(address, (byte)1, reg, 1, true);
-#else
-	_wire->beginTransmission(address);
-#if ARDUINO >= 100
-	_wire->write((uint8_t)reg);
-#else
-	_wire->send(reg);
-#endif
-	_wire->endTransmission();
-	_wire->requestFrom(address, (byte)1);
-#endif
-#if ARDUINO >= 100
-	value = _wire->read();
-#else
-	value = _wire->receive();
-#endif
-	_wire->endTransmission();
-
-	return value;
+	_wire->requestFrom(address, 1, reg, 1, true);
+	return _wire->read();
 }
 
 /**************************************************************************/
@@ -96,43 +60,19 @@ byte Adafruit_LSM303_Accel_Unified::read8(byte address, byte reg)
 bool Adafruit_LSM303_Accel_Unified::read()
 {
 	// Read the accelerometer
-	const byte bytesToRead = 6;
-#if ARDUINO >= 10607
-	if (_wire->requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)bytesToRead, LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80, 1, true) != bytesToRead)
-#else
-	_wire->beginTransmission((byte)LSM303_ADDRESS_ACCEL);
-#if ARDUINO >= 100
-	_wire->write(LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80);
-#else
-	_wire->send(LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80);
-#endif
-	if (_wire->endTransmission() != 0)
-	{
-		// Error.
-		return false;
-	}
-	if (_wire->requestFrom((byte)LSM303_ADDRESS_ACCEL, (byte)bytesToRead) != bytesToRead)
-#endif
+	const uint8_t bytesToRead = 6;
+	if (_wire->requestFrom(LSM303_ADDRESS_ACCEL, bytesToRead, LSM303_REGISTER_ACCEL_OUT_X_L_A | 0x80, 1, true) != bytesToRead)
 	{
 		// Error.
 		return false;
 	}
 
-#if ARDUINO >= 100
 	uint8_t xlo = _wire->read();
 	uint8_t xhi = _wire->read();
 	uint8_t ylo = _wire->read();
 	uint8_t yhi = _wire->read();
 	uint8_t zlo = _wire->read();
 	uint8_t zhi = _wire->read();
-#else
-	uint8_t xlo = _wire->receive();
-	uint8_t xhi = _wire->receive();
-	uint8_t ylo = _wire->receive();
-	uint8_t yhi = _wire->receive();
-	uint8_t zlo = _wire->receive();
-	uint8_t zhi = _wire->receive();
-#endif
 
 	// Shift values to create properly formed integer (low byte first)
 	_accelData.x = (int16_t)(xlo | (xhi << 8)) >> 4;
@@ -304,27 +244,6 @@ bool Adafruit_LSM303_Accel_Unified::getEvent(sensors_event_t *event) {
 	return true;
 }
 
-/**************************************************************************/
-/*!
-	@brief  Gets the sensor_t data
-*/
-/**************************************************************************/
-void Adafruit_LSM303_Accel_Unified::getSensor(sensor_t *sensor) {
-	/* Clear the sensor_t object */
-	memset(sensor, 0, sizeof(sensor_t));
-
-	/* Insert the sensor name in the fixed length char array */
-	strncpy(sensor->name, "LSM303", sizeof(sensor->name) - 1);
-	sensor->name[sizeof(sensor->name) - 1] = 0;
-	sensor->version = 1;
-	sensor->sensor_id = _sensorID;
-	sensor->type = SENSOR_TYPE_ACCELEROMETER;
-	sensor->min_delay = 0;
-	sensor->max_value = 0.0F; // TBD
-	sensor->min_value = 0.0F; // TBD
-	sensor->resolution = 0.0F; // TBD
-}
-
 /***************************************************************************
  MAGNETOMETER
  ***************************************************************************/
@@ -337,16 +256,11 @@ void Adafruit_LSM303_Accel_Unified::getSensor(sensor_t *sensor) {
 	  @brief  Abstract away platform differences in Arduino wire library
   */
   /**************************************************************************/
-void Adafruit_LSM303_Mag_Unified::write8(byte address, byte reg, byte value)
+void Adafruit_LSM303_Mag_Unified::write8(uint8_t address, uint8_t reg, uint8_t value)
 {
 	_wire->beginTransmission(address);
-#if ARDUINO >= 100
-	_wire->write((uint8_t)reg);
-	_wire->write((uint8_t)value);
-#else
-	_wire->send(reg);
-	_wire->send(value);
-#endif
+	_wire->write(reg);
+	_wire->write(value);
 	_wire->endTransmission();
 }
 
@@ -355,30 +269,10 @@ void Adafruit_LSM303_Mag_Unified::write8(byte address, byte reg, byte value)
 	@brief  Abstract away platform differences in Arduino wire library
 */
 /**************************************************************************/
-byte Adafruit_LSM303_Mag_Unified::read8(byte address, byte reg)
+uint8_t Adafruit_LSM303_Mag_Unified::read8(uint8_t address, uint8_t reg)
 {
-	byte value;
-
-#if ARDUINO >= 10607
-	_wire->requestFrom(address, (byte)1, reg, 1, true);
-#else
-	_wire->beginTransmission(address);
-#if ARDUINO >= 100
-	_wire->write((uint8_t)reg);
-#else
-	_wire->send(reg);
-#endif
-	_wire->endTransmission();
-	_wire->requestFrom(address, (byte)1);
-#endif
-#if ARDUINO >= 100
-	value = _wire->read();
-#else
-	value = _wire->receive();
-#endif
-	_wire->endTransmission();
-
-	return value;
+	_wire->requestFrom(address, 1, reg, 1, true);
+	return _wire->read();
 }
 
 /**************************************************************************/
@@ -389,44 +283,20 @@ byte Adafruit_LSM303_Mag_Unified::read8(byte address, byte reg)
 bool Adafruit_LSM303_Mag_Unified::read()
 {
 	// Read the magnetometer
-	const byte bytesToRead = 6;
-#if ARDUINO >= 10607
-	if (_wire->requestFrom((byte)LSM303_ADDRESS_MAG, (byte)bytesToRead, LSM303_REGISTER_MAG_OUT_X_H_M, 1, true) != bytesToRead)
-#else
-	_wire->beginTransmission((byte)LSM303_ADDRESS_MAG);
-#if ARDUINO >= 100
-	_wire->write(LSM303_REGISTER_MAG_OUT_X_H_M);
-#else
-	_wire->send(LSM303_REGISTER_MAG_OUT_X_H_M);
-#endif
-	if (_wire->endTransmission() != 0)
-	{
-		// Error.
-		return false;
-	}
-	if (_wire->requestFrom((byte)LSM303_ADDRESS_MAG, (byte)bytesToRead) != bytesToRead)
-#endif
+	const uint8_t bytesToRead = 6;
+	if (_wire->requestFrom(LSM303_ADDRESS_MAG, bytesToRead, LSM303_REGISTER_MAG_OUT_X_H_M, 1, true) != bytesToRead)
 	{
 		// Error.
 		return false;
 	}
 
 	// Note high before low (different than accel)
-#if ARDUINO >= 100
 	uint8_t xhi = _wire->read();
 	uint8_t xlo = _wire->read();
 	uint8_t zhi = _wire->read();
 	uint8_t zlo = _wire->read();
 	uint8_t yhi = _wire->read();
 	uint8_t ylo = _wire->read();
-#else
-	uint8_t xhi = _wire->receive();
-	uint8_t xlo = _wire->receive();
-	uint8_t zhi = _wire->receive();
-	uint8_t zlo = _wire->receive();
-	uint8_t yhi = _wire->receive();
-	uint8_t ylo = _wire->receive();
-#endif
 
 	// Shift values to create properly formed integer (low byte first)
 	_magData.x = (int16_t)(xlo | ((int16_t)xhi << 8));
@@ -594,11 +464,6 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
 		}
 		else
 		{
-#ifdef LSM303_DEBUG
-			Serial.print(_magData.x); Serial.print(" ");
-			Serial.print(_magData.y); Serial.print(" ");
-			Serial.print(_magData.z); Serial.println(" ");
-#endif
 			/* Check if the sensor is saturating or not */
 			if ((_magData.x >= 2040) | (_magData.x <= -2040) |
 				(_magData.y >= 2040) | (_magData.y <= -2040) |
@@ -610,44 +475,26 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
 				case LSM303_MAGGAIN_5_6:
 					setMagGain(LSM303_MAGGAIN_8_1);
 					readingValid = false;
-#ifdef LSM303_DEBUG
-					Serial.println("Changing range to +/- 8.1");
-#endif
 					break;
 				case LSM303_MAGGAIN_4_7:
 					setMagGain(LSM303_MAGGAIN_5_6);
 					readingValid = false;
-#ifdef LSM303_DEBUG
-					Serial.println("Changing range to +/- 5.6");
-#endif
 					break;
 				case LSM303_MAGGAIN_4_0:
 					setMagGain(LSM303_MAGGAIN_4_7);
 					readingValid = false;
-#ifdef LSM303_DEBUG
-					Serial.println("Changing range to +/- 4.7");
-#endif
 					break;
 				case LSM303_MAGGAIN_2_5:
 					setMagGain(LSM303_MAGGAIN_4_0);
 					readingValid = false;
-#ifdef LSM303_DEBUG
-					Serial.println("Changing range to +/- 4.0");
-#endif
 					break;
 				case LSM303_MAGGAIN_1_9:
 					setMagGain(LSM303_MAGGAIN_2_5);
 					readingValid = false;
-#ifdef LSM303_DEBUG
-					Serial.println("Changing range to +/- 2.5");
-#endif
 					break;
 				case LSM303_MAGGAIN_1_3:
 					setMagGain(LSM303_MAGGAIN_1_9);
 					readingValid = false;
-#ifdef LSM303_DEBUG
-					Serial.println("Changing range to +/- 1.9");
-#endif
 					break;
 				default:
 					readingValid = true;
@@ -671,25 +518,4 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
 	event->magnetic.z = _magData.z / _lsm303Mag_Gauss_LSB_Z * SENSORS_GAUSS_TO_MICROTESLA;
 
 	return true;
-}
-
-/**************************************************************************/
-/*!
-	@brief  Gets the sensor_t data
-*/
-/**************************************************************************/
-void Adafruit_LSM303_Mag_Unified::getSensor(sensor_t *sensor) {
-	/* Clear the sensor_t object */
-	memset(sensor, 0, sizeof(sensor_t));
-
-	/* Insert the sensor name in the fixed length char array */
-	strncpy(sensor->name, "LSM303", sizeof(sensor->name) - 1);
-	sensor->name[sizeof(sensor->name) - 1] = 0;
-	sensor->version = 1;
-	sensor->sensor_id = _sensorID;
-	sensor->type = SENSOR_TYPE_MAGNETIC_FIELD;
-	sensor->min_delay = 0;
-	sensor->max_value = 0.0F; // TBD
-	sensor->min_value = 0.0F; // TBD
-	sensor->resolution = 0.0F; // TBD
 }
