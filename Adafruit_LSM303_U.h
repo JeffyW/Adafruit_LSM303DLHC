@@ -15,9 +15,8 @@
 #ifndef __LSM303_H__
 #define __LSM303_H__
 
-#include "Arduino.h"
 #include <Adafruit_Sensor.h>
-#include <Wire.h>
+#include <I2C-Master-Library/I2C.h>
 
  /*=========================================================================
 	I2C ADDRESS/BITS
@@ -177,8 +176,11 @@ typedef struct lsm303AccelData_s
 class Adafruit_LSM303_Accel_Unified
 {
 public:
-	Adafruit_LSM303_Accel_Unified(TwoWire* wire, int32_t sensorID = -1);
-	Adafruit_LSM303_Accel_Unified(int32_t sensorID = -1);
+	Adafruit_LSM303_Accel_Unified(I2C* wire, int32_t sensorID = -1) :
+		_wire(wire),
+		_sensorID(sensorID) {}
+	Adafruit_LSM303_Accel_Unified(int32_t sensorID = -1) :
+		Adafruit_LSM303_Accel_Unified(&I2c, sensorID) {}
 
 	bool begin(void);
 	void setAccelRange(lsm303AccelRange);
@@ -189,12 +191,12 @@ public:
 	void enableAutoRange(bool enabled) {};
 
 private:
-	TwoWire*        _wire;
+	I2C*        _wire;
 	lsm303AccelData _accelData;   // Last read accelerometer data will be available here
 	int32_t         _sensorID;
 
-	void write8(uint8_t address, uint8_t reg, uint8_t value);
-	uint8_t read8(uint8_t address, uint8_t reg);
+	uint8_t write8(uint8_t address, uint8_t reg, uint8_t value);
+	uint8_t read8(uint8_t address, uint8_t reg, uint8_t *value);
 	bool read(void);
 };
 
@@ -202,8 +204,12 @@ private:
 class Adafruit_LSM303_Mag_Unified
 {
 public:
-	Adafruit_LSM303_Mag_Unified(TwoWire* wire, int32_t sensorID = -1);
-	Adafruit_LSM303_Mag_Unified(int32_t sensorID = -1);
+	Adafruit_LSM303_Mag_Unified(I2C* wire, int32_t sensorID = -1) :
+		_wire(wire),
+		_sensorID(sensorID),
+		_autoRangeEnabled(false) {}
+	Adafruit_LSM303_Mag_Unified(int32_t sensorID = -1) :
+		Adafruit_LSM303_Mag_Unified(&I2c, sensorID) {}
 
 	bool begin(void);
 	void enableAutoRange(bool enable);
@@ -212,14 +218,14 @@ public:
 	bool getEvent(sensors_vec_t *magnetic);
 
 private:
-	TwoWire*        _wire;
+	I2C*        _wire;
 	lsm303MagGain   _magGain;
 	lsm303MagData   _magData;     // Last read magnetometer data will be available here
 	int32_t         _sensorID;
 	bool            _autoRangeEnabled;
 
-	void write8(uint8_t address, uint8_t reg, uint8_t value);
-	uint8_t read8(uint8_t address, uint8_t reg);
+	uint8_t write8(uint8_t address, uint8_t reg, uint8_t value);
+	uint8_t read8(uint8_t address, uint8_t reg, uint8_t *value);
 	bool read(void);
 };
 
