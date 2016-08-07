@@ -437,11 +437,11 @@ void Adafruit_LSM303_Mag_Unified::setMagRate(lsm303MagRate rate)
 	@brief  Gets the most recent sensor event
 */
 /**************************************************************************/
-bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
+bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_vec_t *magnetic) {
 	bool readingValid = false;
 
 	/* Clear the event */
-	memset(event, 0, sizeof(sensors_event_t));
+	memset(magnetic, 0, sizeof(sensors_vec_t));
 
 	while (!readingValid)
 	{
@@ -458,11 +458,8 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
 		}
 
 		/* Make sure the sensor isn't saturating if auto-ranging is enabled */
-		if (!_autoRangeEnabled)
-		{
-			readingValid = true;
-		}
-		else
+		readingValid = true;
+		if (_autoRangeEnabled)
 		{
 			/* Check if the sensor is saturating or not */
 			if ((_magData.x >= 2040) | (_magData.x <= -2040) |
@@ -472,50 +469,39 @@ bool Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
 				/* Saturating .... increase the range if we can */
 				switch (_magGain)
 				{
-				case LSM303_MAGGAIN_5_6:
-					setMagGain(LSM303_MAGGAIN_8_1);
-					readingValid = false;
-					break;
-				case LSM303_MAGGAIN_4_7:
-					setMagGain(LSM303_MAGGAIN_5_6);
-					readingValid = false;
-					break;
-				case LSM303_MAGGAIN_4_0:
-					setMagGain(LSM303_MAGGAIN_4_7);
-					readingValid = false;
-					break;
-				case LSM303_MAGGAIN_2_5:
-					setMagGain(LSM303_MAGGAIN_4_0);
-					readingValid = false;
-					break;
-				case LSM303_MAGGAIN_1_9:
-					setMagGain(LSM303_MAGGAIN_2_5);
-					readingValid = false;
-					break;
-				case LSM303_MAGGAIN_1_3:
-					setMagGain(LSM303_MAGGAIN_1_9);
-					readingValid = false;
-					break;
-				default:
-					readingValid = true;
-					break;
+					case LSM303_MAGGAIN_5_6:
+						setMagGain(LSM303_MAGGAIN_8_1);
+						readingValid = false;
+						break;
+					case LSM303_MAGGAIN_4_7:
+						setMagGain(LSM303_MAGGAIN_5_6);
+						readingValid = false;
+						break;
+					case LSM303_MAGGAIN_4_0:
+						setMagGain(LSM303_MAGGAIN_4_7);
+						readingValid = false;
+						break;
+					case LSM303_MAGGAIN_2_5:
+						setMagGain(LSM303_MAGGAIN_4_0);
+						readingValid = false;
+						break;
+					case LSM303_MAGGAIN_1_9:
+						setMagGain(LSM303_MAGGAIN_2_5);
+						readingValid = false;
+						break;
+					case LSM303_MAGGAIN_1_3:
+						setMagGain(LSM303_MAGGAIN_1_9);
+						readingValid = false;
+						break;
+					default:
+						break;
 				}
-			}
-			else
-			{
-				/* All values are withing range */
-				readingValid = true;
 			}
 		}
 	}
-
-	event->version = sizeof(sensors_event_t);
-	event->sensor_id = _sensorID;
-	event->type = SENSOR_TYPE_MAGNETIC_FIELD;
-	event->timestamp = millis();
-	event->magnetic.x = _magData.x / _lsm303Mag_Gauss_LSB_XY * SENSORS_GAUSS_TO_MICROTESLA;
-	event->magnetic.y = _magData.y / _lsm303Mag_Gauss_LSB_XY * SENSORS_GAUSS_TO_MICROTESLA;
-	event->magnetic.z = _magData.z / _lsm303Mag_Gauss_LSB_Z * SENSORS_GAUSS_TO_MICROTESLA;
+	magnetic->x = _magData.x / _lsm303Mag_Gauss_LSB_XY * SENSORS_GAUSS_TO_MICROTESLA;
+	magnetic->y = _magData.y / _lsm303Mag_Gauss_LSB_XY * SENSORS_GAUSS_TO_MICROTESLA;
+	magnetic->z = _magData.z / _lsm303Mag_Gauss_LSB_Z * SENSORS_GAUSS_TO_MICROTESLA;
 
 	return true;
 }

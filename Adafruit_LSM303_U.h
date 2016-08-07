@@ -186,6 +186,7 @@ public:
 	void setAccelRate(lsm303AccelRate);
 	void enableLowPower(bool);
 	bool getEvent(sensors_event_t*);
+	virtual void enableAutoRange(bool enabled) {};
 
 private:
 	TwoWire*        _wire;
@@ -208,7 +209,7 @@ public:
 	void enableAutoRange(bool enable);
 	void setMagGain(lsm303MagGain gain);
 	void setMagRate(lsm303MagRate rate);
-	bool getEvent(sensors_event_t*);
+	bool getEvent(sensors_vec_t *magnetic);
 
 private:
 	TwoWire*        _wire;
